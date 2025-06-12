@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tính MLCT theo Schwartz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #ffffff);
+      padding: 30px;
+      color: #333;
+    }
+    .container {
+      background: #ffffffcc;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 520px;
+      margin: auto;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #00796b;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 18px;
+      font-weight: 600;
+      color: #004d40;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      font-family: 'Quicksand', sans-serif;
+    }
+    select {
+      background-color: #f0f9f8;
+    }
+    button {
+      background: linear-gradient(to right, #26a69a, #00796b);
+      color: white;
+      font-weight: bold;
+      margin-top: 24px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: linear-gradient(to right, #00796b, #004d40);
+    }
+    #result {
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Tính MLCT (Schwartz)</h2>
+
+    <label>Chiều cao (cm):</label>
+    <input type="number" id="height" placeholder="VD: 110">
+
+    <label>Creatinine máu (µmol/L):</label>
+    <input type="number" id="creatinine" placeholder="VD: 35">
+
+    <label>Tuổi:</label>
+    <input type="number" id="age">
+
+    <label>Đơn vị tuổi:</label>
+    <select id="ageUnit">
+      <option value="week">Tuần tuổi</option>
+      <option value="month">Tháng tuổi</option>
+      <option value="year">Năm tuổi</option>
+    </select>
+
+    <label>Giới tính:</label>
+    <select id="gender">
+      <option value="male">Nam</option>
+      <option value="female">Nữ</option>
+    </select>
+
+    <button onclick="calculateMLCT()">Tính MLCT</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function getK(age, unit, gender) {
+      let ageInYears;
+      if (unit === 'week') {
+        if (age <= 1) return 29.2;
+        else if (age <= 8) return 39.78;
+        else ageInYears = age / 52;
+      } else if (unit === 'month') {
+        ageInYears = age / 12;
+      } else {
+        ageInYears = age;
+      }
+
+      if (ageInYears <= 2) return 39.78;
+      else if (ageInYears <= 12) return 48.6;
+      else if (ageInYears <= 21) return gender === 'male' ? 61.88 : 48.6;
+      else return 61.88;
+    }
+
+    function calculateMLCT() {
+      const height = parseFloat(document.getElementById('height').value);
+      const creatinine = parseFloat(document.getElementById('creatinine').value);
+      const age = parseFloat(document.getElementById('age').value);
+      const unit = document.getElementById('ageUnit').value;
+      const gender = document.getElementById('gender').value;
+      const resultDiv = document.getElementById('result');
+
+      if (isNaN(height) || isNaN(creatinine) || isNaN(age) || creatinine <= 0) {
+        resultDiv.innerText = "Vui lòng nhập đầy đủ và hợp lệ.";
+        resultDiv.style.backgroundColor = "#fca311";
+        resultDiv.style.color = "#000";
+        return;
+      }
+
+      const K = getK(age, unit, gender);
+      const mlct = (K * height) / creatinine;
+      let interpretation = "";
+      let color = "#ccc";
+      let textColor = "#000";
+
+      if (mlct >= 90) {
+        interpretation = "Bình thường";
+        color = "#80ed99";
+      } else if (mlct >= 60) {
+        interpretation = "Suy thận độ 1";
+        color = "#f9dc5c";
+      } else if (mlct >= 30) {
+        interpretation = "Suy thận độ 2";
+        color = "#b08968";
+      } else if (mlct >= 15) {
+        interpretation = "Suy thận độ 3";
+        color = "#ef233c";
+        textColor = "#fff";
+      } else {
+        interpretation = "Suy thận độ 4";
+        color = "#000";
+        textColor = "#fff";
+      }
+
+      resultDiv.innerText = `MLCT = ${mlct.toFixed(1)} ml/phút/1.73m² → ${interpretation}`;
+      resultDiv.style.backgroundColor = color;
+      resultDiv.style.color = textColor;
+    }
+  </script>
+</body>
+</html>
